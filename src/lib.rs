@@ -1,6 +1,7 @@
 extern crate rand;
 
 pub mod util;
+pub mod vector;
 
 struct NeuralNetwork<T>
     where T: Fn(i64) -> i64
