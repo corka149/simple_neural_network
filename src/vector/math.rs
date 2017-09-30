@@ -1,4 +1,5 @@
 use super::MathError;
+use super::*;
 
 pub fn multiply_vectors(first_vec: &Vec<Vec<f64>>,
                         second_vec: &Vec<Vec<f64>>)
@@ -26,6 +27,51 @@ pub fn multiply_vectors(first_vec: &Vec<Vec<f64>>,
     Ok(product)
 }
 
+pub fn subtract_simple_vectors(first_vec: &Vec<f64>, second_vec: &Vec<f64>) -> Vec<f64> {
+    first_vec
+        .iter()
+        .zip(second_vec)
+        .map(|(a, b)| a - b)
+        .collect()
+}
+
+pub fn sum_vectors(first: &Vec<Vec<f64>>,
+                   second: &Vec<Vec<f64>>)
+                   -> Result<Vec<Vec<f64>>, MathError> {
+    let mut x = 0;
+    let mut result: Vec<Vec<f64>> = Vec::new();
+
+    if first.len() != second.len() {
+        return Err(MathError);
+    }
+
+    while x < first.len() {
+        let row_first: &Vec<f64> = match first.get(x) {
+            Some(r) => r,
+            None => return Err(MathError),
+        };
+        let row_second: &Vec<f64> = match second.get(x) {
+            Some(r) => r,
+            None => return Err(MathError),
+        };
+
+        if row_first.len() != row_second.len() {
+            return Err(MathError);
+        }
+
+        let mut row = row_first
+            .iter()
+            .zip(row_second)
+            .map(|(a, b)| a + b)
+            .collect();
+
+        result.push(row);
+        x += 1;
+    }
+
+    Ok(result)
+}
+
 pub fn transpose_vec<T>(target: &Vec<Vec<T>>) -> Vec<Vec<T>>
     where T: Clone
 {
@@ -48,6 +94,33 @@ pub fn transpose_vec<T>(target: &Vec<Vec<T>>) -> Vec<Vec<T>>
     trans_vec
 }
 
+/// Example:    1       1   0   0
+///             2   =>  0   2   0
+///             3       0   0   3
+pub fn make_vector_quadratic(target_vec: &Vec<Vec<f64>>) -> Option<Vec<Vec<f64>>> {
+    let mut quadratic_vec: Vec<Vec<f64>> = vec![];
+
+    for (index, value) in target_vec.iter().enumerate() {
+        let mut row = create_zeroed_vector(target_vec.len());
+        quadratic_vec.push(row);
+
+        let value = match value.get(0) {
+            Some(v) => v,
+            None => panic!("Vector is empty - invalid state!"),
+        };
+
+        let mut row = match quadratic_vec.get_mut(index) {
+            Some(r) => r,
+            None => return None,
+        };
+
+        if let Some(v) = row.get_mut(index) {
+            *v = *value;
+        };
+    }
+
+    Some(quadratic_vec)
+}
 
 #[cfg(test)]
 mod tests {
@@ -96,5 +169,35 @@ mod tests {
         if let Err(e) = multiply_vectors(&vec_a, &vec_b) {
             panic!("{}", e);
         }
+    }
+
+    #[test]
+    fn test_subtract_simple_vectors() {
+        let vec_a = vec![2.0, 3.0];
+        let vec_b = vec![1.0, 1.5];
+        let result = subtract_simple_vectors(&vec_a, &vec_b);
+        assert_eq!(result[0], 1.0);
+        assert_eq!(result[1], 1.5);
+    }
+
+    #[test]
+    fn test_make_vector_quadratic() {
+        let test_vec = vec![vec![1.0], vec![2.0]];
+        assert_eq!(test_vec[0][0], 1.0);
+        assert_eq!(test_vec[1][0], 2.0);
+        let test_vec = make_vector_quadratic(&test_vec).unwrap();
+        assert_eq!(test_vec[0][0], 1.0);
+        assert_eq!(test_vec[1][1], 2.0);
+    }
+
+    #[test]
+    fn test_sum_vectors() {
+        let first = vec![vec![1.0, 2.0], vec![3.0, 4.0]];
+        let second = vec![vec![5.0, 6.0], vec![7.0, 8.0]];
+        let result = sum_vectors(&first, &second).unwrap();
+        assert_eq!(result[0][0], 6.0);
+        assert_eq!(result[0][1], 8.0);
+        assert_eq!(result[1][0], 10.0);
+        assert_eq!(result[1][1], 12.0);
     }
 }

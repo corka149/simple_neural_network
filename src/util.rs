@@ -21,9 +21,8 @@ pub fn create_weighting_row(x: u64) -> Vec<f64> {
 }
 
 pub fn sigmoid(x: f64) -> f64 {
-    ( 1.0 / (1.0 + E.powf(-x)))
+    (1.0 / (1.0 + E.powf(-x)))
 }
-
 
 #[cfg(test)]
 mod tests {
@@ -46,6 +45,6 @@ mod tests {
     fn test_sigmoid() {
         let y = 0.8807970779778823;
         let x = sigmoid(2.0);
-        assert_eq!(y,x);
+        assert_eq!(y, x);
     }
 }

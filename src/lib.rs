@@ -5,7 +5,7 @@ pub mod vector;
 
 use vector::math;
 
-struct NeuralNetwork<T>
+pub struct NeuralNetwork<T>
     where T: Fn(f64) -> f64
 {
     input_nodes: u64,
@@ -37,20 +37,50 @@ impl<T> NeuralNetwork<T>
             output_nodes,
             learning_rate,
             activation_function,
-            wih, // input -> hidden
-            who, // hidden -> output
+            wih, // weighting: input -> hidden
+            who, // weighting: hidden -> output
         }
     }
 
-    pub fn train(&self, inputs: Vec<f64>, output: &Vec<f64>) {}
+    pub fn train(&mut self,
+                 inputs: &Vec<f64>,
+                 awaited_output: &Vec<f64>)
+                 -> Result<(), vector::MathError> {
+        let final_result = self.query(inputs);
+        let hidden_result = self.calculate_layer_output(inputs, &self.wih);
+        let output_error = math::subtract_simple_vectors(&final_result, &awaited_output);
 
-    pub fn query(&self, inputs: Vec<f64>) -> Vec<f64> {
-        let hidden_inputs = self.calculate_layer_output(inputs, &self.wih);
-        self.calculate_layer_output(hidden_inputs, &self.who)
+        let who_adjustment =
+            self.calculate_weighting_adjustment(&output_error, &final_result, &hidden_result)?;
+        self.who = math::sum_vectors(&self.who, &who_adjustment)?;
+
+        let hidden_error =
+            match math::multiply_vectors(&self.who, &math::transpose_vec(&vec![output_error])) {
+                Ok(r) => r,
+                Err(e) => panic!("{}", e),
+            };
+
+        // change from two dimensional to one dimensional vector
+        let hidden_error = math::transpose_vec(&hidden_error);
+        let hidden_error = match hidden_error.first() {
+            Some(he) => he,
+            None => panic!("hidden error can never be without a first row!!!"),
+        };
+
+        let wih_adjustment =
+            self.calculate_weighting_adjustment(&hidden_error, &hidden_result, inputs)?;
+        self.wih = math::sum_vectors(&self.wih, &wih_adjustment)?;
+
+        Ok(())
     }
 
-    fn calculate_layer_output(&self, inputs: Vec<f64>, weighting: &Vec<Vec<f64>>) -> Vec<f64> {
-        let inputs = math::transpose_vec(&vec![inputs]);
+    pub fn query(&self, inputs: &Vec<f64>) -> Vec<f64> {
+        let hidden_inputs = self.calculate_layer_output(&inputs, &self.wih);
+        self.calculate_layer_output(&hidden_inputs, &self.who)
+    }
+
+    fn calculate_layer_output(&self, inputs: &Vec<f64>, weighting: &Vec<Vec<f64>>) -> Vec<f64> {
+        let inputs = math::transpose_vec(&vec![inputs.clone()]);
         let weighted_input = match math::multiply_vectors(weighting, &inputs) {
             Ok(r) => r,
             Err(e) => panic!("{}", e),
@@ -62,6 +92,29 @@ impl<T> NeuralNetwork<T>
             outputs.push((self.activation_function)(row.iter().sum()));
         }
         outputs
+    }
+
+    fn calculate_weighting_adjustment(&self,
+                                      error: &Vec<f64>,
+                                      output: &Vec<f64>,
+                                      previous_output: &Vec<f64>)
+                                      -> Result<Vec<Vec<f64>>, vector::MathError> {
+        let inner_result: Vec<f64> = error
+            .iter()
+            .zip(output)
+            .map(|(x, y)| x * y * (1.0 - y))
+            .collect();
+        let inner_result = math::transpose_vec(&vec![inner_result]);
+        let mut outer_result = math::multiply_vectors(&inner_result,
+                                                      &vec![previous_output.clone()])?;
+
+        for row in outer_result.iter_mut() {
+            for cell in row.iter_mut() {
+                *cell *= self.learning_rate;
+            }
+        }
+
+        Ok(outer_result)
     }
 }
 
@@ -82,20 +135,37 @@ mod tests {
 
     #[test]
     fn test_train() {
-        let nn = NeuralNetwork::new(3, 3, 3, 0.3, |x| x + 1.0);
+        let mut nn = NeuralNetwork::new(3, 3, 3, 0.3, |x| x + 1.0);
 
-        let inputs: Vec<f64> = vec![1.0];
-        let outputs: Vec<f64> = vec![1.0];
+        let inputs: Vec<f64> = vec![1.0, 1.0, 1.0];
+        let outputs: Vec<f64> = vec![1.0, 1.0, 1.0];
 
-        nn.train(inputs, &outputs);
+        nn.train(&inputs, &outputs);
     }
 
     #[test]
     fn test_query() {
         let nn = NeuralNetwork::new(3, 3, 3, 0.3, |x| x + 1.0);
 
-        let inputs: Vec<f64> = vec![1.0,1.0, 1.0];
+        let inputs: Vec<f64> = vec![1.0, 1.0, 1.0];
 
-        nn.query(inputs);
+        nn.query(&inputs);
+    }
+
+    #[test]
+    fn test_calculate_weighting_adjustment() {
+        let nn = NeuralNetwork::new(2, 2, 2, 0.5, |x| x + 1.0);
+
+        let err = vec![0.2, 0.15];
+        let fin_result = vec![0.9, 0.7];
+        let hidden_result = vec![0.5, 0.8];
+
+        let result = nn.calculate_weighting_adjustment(&err, &fin_result, &hidden_result)
+            .unwrap();
+
+        assert_eq!(result[0][0], 0.0045);
+        assert_eq!(result[0][1], 0.0072);
+        assert_eq!(result[1][0], 0.007875);
+        assert_eq!(result[1][1], 0.0126);
     }
 }
