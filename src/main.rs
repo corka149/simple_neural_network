@@ -1,5 +1,6 @@
 extern crate neural_network;
 
-use neural_network::NeuralNetwork;
+use neural_network::util;
 
-fn main() {}
+fn main() {
+}
