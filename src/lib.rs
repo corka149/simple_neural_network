@@ -1,9 +1,11 @@
 extern crate rand;
 
 pub mod util;
-pub mod vector;
+pub mod matrix;
+pub mod mnist_data;
 
-use vector::math;
+
+use matrix::math;
 
 pub struct NeuralNetwork<T>
     where T: Fn(f64) -> f64
@@ -45,23 +47,23 @@ impl<T> NeuralNetwork<T>
     pub fn train(&mut self,
                  inputs: &Vec<f64>,
                  awaited_output: &Vec<f64>)
-                 -> Result<(), vector::MathError> {
+                 -> Result<(), matrix::MathError> {
         let final_result = self.query(inputs);
         let hidden_result = self.calculate_layer_output(inputs, &self.wih);
-        let output_error = math::subtract_simple_vectors(&final_result, &awaited_output);
+        let output_error = math::subtract_vectors(&final_result, &awaited_output);
 
         let who_adjustment =
             self.calculate_weighting_adjustment(&output_error, &final_result, &hidden_result)?;
-        self.who = math::sum_vectors(&self.who, &who_adjustment)?;
+        self.who = math::sum_matrices(&self.who, &who_adjustment)?;
 
         let hidden_error =
-            match math::multiply_vectors(&self.who, &math::transpose_vec(&vec![output_error])) {
+            match math::multiply_matrices(&math::transpose_matrix(&self.who), &math::transpose_matrix(&vec![output_error])) {
                 Ok(r) => r,
-                Err(e) => panic!("{}", e),
+                Err(e) => panic!("error: {}", e),
             };
 
-        // change from two dimensional to one dimensional vector
-        let hidden_error = math::transpose_vec(&hidden_error);
+        // change from two dimensional to one dimensional matrix
+        let hidden_error = math::transpose_matrix(&hidden_error);
         let hidden_error = match hidden_error.first() {
             Some(he) => he,
             None => panic!("hidden error can never be without a first row!!!"),
@@ -69,7 +71,7 @@ impl<T> NeuralNetwork<T>
 
         let wih_adjustment =
             self.calculate_weighting_adjustment(&hidden_error, &hidden_result, inputs)?;
-        self.wih = math::sum_vectors(&self.wih, &wih_adjustment)?;
+        self.wih = math::sum_matrices(&self.wih, &wih_adjustment)?;
 
         Ok(())
     }
@@ -80,8 +82,8 @@ impl<T> NeuralNetwork<T>
     }
 
     fn calculate_layer_output(&self, inputs: &Vec<f64>, weighting: &Vec<Vec<f64>>) -> Vec<f64> {
-        let inputs = math::transpose_vec(&vec![inputs.clone()]);
-        let weighted_input = match math::multiply_vectors(weighting, &inputs) {
+        let inputs = math::transpose_matrix(&vec![inputs.clone()]);
+        let weighted_input = match math::multiply_matrices(weighting, &inputs) {
             Ok(r) => r,
             Err(e) => panic!("{}", e),
         };
@@ -98,15 +100,15 @@ impl<T> NeuralNetwork<T>
                                       error: &Vec<f64>,
                                       output: &Vec<f64>,
                                       previous_output: &Vec<f64>)
-                                      -> Result<Vec<Vec<f64>>, vector::MathError> {
+                                      -> Result<Vec<Vec<f64>>, matrix::MathError> {
         let inner_result: Vec<f64> = error
             .iter()
             .zip(output)
             .map(|(x, y)| x * y * (1.0 - y))
             .collect();
-        let inner_result = math::transpose_vec(&vec![inner_result]);
-        let mut outer_result = math::multiply_vectors(&inner_result,
-                                                      &vec![previous_output.clone()])?;
+        let inner_result = math::transpose_matrix(&vec![inner_result]);
+        let mut outer_result = math::multiply_matrices(&inner_result,
+                                                       &vec![previous_output.clone()])?;
 
         for row in outer_result.iter_mut() {
             for cell in row.iter_mut() {

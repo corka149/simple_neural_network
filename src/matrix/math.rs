@@ -1,16 +1,18 @@
 use super::MathError;
 use super::*;
 
-pub fn multiply_vectors(first_vec: &Vec<Vec<f64>>,
-                        second_vec: &Vec<Vec<f64>>)
-                        -> Result<Vec<Vec<f64>>, MathError> {
+pub fn multiply_matrices(first_vec: &Vec<Vec<f64>>,
+                         second_vec: &Vec<Vec<f64>>)
+                         -> Result<Vec<Vec<f64>>, MathError> {
     let mut product: Vec<Vec<f64>> = Vec::new();
 
     for first_row in first_vec {
         let mut result_row: Vec<f64> = Vec::new();
 
-        for second_row in transpose_vec(&second_vec) {
+        for second_row in transpose_matrix(&second_vec) {
             if first_row.len() != second_row.len() {
+                eprintln!("left {} | right {}", first_row.len(), second_row.len());
+                eprintln!("right matrix: {:?}", second_vec);
                 return Err(MathError);
             }
 
@@ -27,7 +29,7 @@ pub fn multiply_vectors(first_vec: &Vec<Vec<f64>>,
     Ok(product)
 }
 
-pub fn subtract_simple_vectors(first_vec: &Vec<f64>, second_vec: &Vec<f64>) -> Vec<f64> {
+pub fn subtract_vectors(first_vec: &Vec<f64>, second_vec: &Vec<f64>) -> Vec<f64> {
     first_vec
         .iter()
         .zip(second_vec)
@@ -35,9 +37,9 @@ pub fn subtract_simple_vectors(first_vec: &Vec<f64>, second_vec: &Vec<f64>) -> V
         .collect()
 }
 
-pub fn sum_vectors(first: &Vec<Vec<f64>>,
-                   second: &Vec<Vec<f64>>)
-                   -> Result<Vec<Vec<f64>>, MathError> {
+pub fn sum_matrices(first: &Vec<Vec<f64>>,
+                    second: &Vec<Vec<f64>>)
+                    -> Result<Vec<Vec<f64>>, MathError> {
     let mut x = 0;
     let mut result: Vec<Vec<f64>> = Vec::new();
 
@@ -72,7 +74,7 @@ pub fn sum_vectors(first: &Vec<Vec<f64>>,
     Ok(result)
 }
 
-pub fn transpose_vec<T>(target: &Vec<Vec<T>>) -> Vec<Vec<T>>
+pub fn transpose_matrix<T>(target: &Vec<Vec<T>>) -> Vec<Vec<T>>
     where T: Clone
 {
     let mut trans_vec: Vec<Vec<T>> = Vec::new();
@@ -127,19 +129,19 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_transpose_vec() {
+    fn test_transpose_matrix() {
         let a_1: Vec<f64> = vec![1.0, 2.0];
         let a_2: Vec<f64> = vec![3.0, 4.0];
         let a_3: Vec<f64> = vec![5.0, 6.0];
         let a = vec![a_1, a_2, a_3];
-        let new_a = transpose_vec(&a);
+        let new_a = transpose_matrix(&a);
 
         assert_eq!(a[0][0], 1.0);
         assert_eq!(a[2][1], 6.0);
     }
 
     #[test]
-    fn test_multiply_vecotrs() {
+    fn test_multiply_matrices() {
         let vec_a_1: Vec<f64> = vec![1.0, 2.0, 3.0];
         let vec_a_2: Vec<f64> = vec![4.0, 5.0, 6.0];
         let mut vec_a: Vec<Vec<f64>> = vec![vec_a_1, vec_a_2];
@@ -149,7 +151,7 @@ mod tests {
         let vec_b_3: Vec<f64> = vec![11.0, 12.0];
         let mut vec_b: Vec<Vec<f64>> = vec![vec_b_1, vec_b_2, vec_b_3];
 
-        let result: Vec<Vec<f64>> = multiply_vectors(&vec_a, &vec_b).unwrap();
+        let result: Vec<Vec<f64>> = multiply_matrices(&vec_a, &vec_b).unwrap();
 
         assert_eq!(result[0][0], 58.0);
         assert_eq!(result[0][1], 64.0);
@@ -159,23 +161,23 @@ mod tests {
 
     #[test]
     #[should_panic(expected = "incompatible vectors")]
-    fn test_multiply_vectors_error() {
+    fn test_multiply_matrices_error() {
         let vec_a_1: Vec<f64> = vec![1.0, 2.0];
         let vec_a_2: Vec<f64> = vec![4.0, 5.0];
         let mut vec_a: Vec<Vec<f64>> = vec![vec_a_1, vec_a_2];
 
         let mut vec_b: Vec<Vec<f64>> = vec![vec![7.0, 8.0]];
 
-        if let Err(e) = multiply_vectors(&vec_a, &vec_b) {
+        if let Err(e) = multiply_matrices(&vec_a, &vec_b) {
             panic!("{}", e);
         }
     }
 
     #[test]
-    fn test_subtract_simple_vectors() {
+    fn test_subtract_vectors() {
         let vec_a = vec![2.0, 3.0];
         let vec_b = vec![1.0, 1.5];
-        let result = subtract_simple_vectors(&vec_a, &vec_b);
+        let result = subtract_vectors(&vec_a, &vec_b);
         assert_eq!(result[0], 1.0);
         assert_eq!(result[1], 1.5);
     }
@@ -191,10 +193,10 @@ mod tests {
     }
 
     #[test]
-    fn test_sum_vectors() {
+    fn test_sum_matrices() {
         let first = vec![vec![1.0, 2.0], vec![3.0, 4.0]];
         let second = vec![vec![5.0, 6.0], vec![7.0, 8.0]];
-        let result = sum_vectors(&first, &second).unwrap();
+        let result = sum_matrices(&first, &second).unwrap();
         assert_eq!(result[0][0], 6.0);
         assert_eq!(result[0][1], 8.0);
         assert_eq!(result[1][0], 10.0);
