@@ -48,9 +48,9 @@ impl<T> NeuralNetwork<T>
                  inputs: &Vec<f64>,
                  awaited_output: &Vec<f64>)
                  -> Result<(), matrix::MathError> {
-        let final_result = self.query(inputs);
-        let hidden_result = self.calculate_layer_output(inputs, &self.wih);
-        let output_error = math::subtract_vectors(&final_result, &awaited_output);
+        let hidden_result = self.calculate_layer_output(&inputs, &self.wih);
+        let final_result = self.calculate_layer_output(&hidden_result, &self.who);
+        let output_error = math::subtract_vectors(&awaited_output, &final_result);
 
         let who_adjustment =
             self.calculate_weighting_adjustment(&output_error, &final_result, &hidden_result)?;
@@ -77,8 +77,8 @@ impl<T> NeuralNetwork<T>
     }
 
     pub fn query(&self, inputs: &Vec<f64>) -> Vec<f64> {
-        let hidden_inputs = self.calculate_layer_output(&inputs, &self.wih);
-        self.calculate_layer_output(&hidden_inputs, &self.who)
+        let hidden_outputs = self.calculate_layer_output(&inputs, &self.wih);
+        self.calculate_layer_output(&hidden_outputs, &self.who)
     }
 
     fn calculate_layer_output(&self, inputs: &Vec<f64>, weighting: &Vec<Vec<f64>>) -> Vec<f64> {

@@ -30,14 +30,15 @@ fn main() {
         let mut answer: usize = 0;
         let mut highest: f64 = 0.0;
 
-        print!("correct number: {} | neural network answer: ", number);
+        print!("correct number: {} | neural network answer: (", number);
         for (index, value) in nn.query(&values).iter().enumerate() {
             if *value > highest {
                 highest = *value;
                 answer = index;
             }
+            print!(" {}\t ", (*value as f32));
         }
-        println!("{}", answer);
+        println!(") {}", answer);
     }
 
     println!("Finish!");

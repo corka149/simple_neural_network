@@ -87,8 +87,11 @@ pub fn transpose_matrix<T>(target: &Vec<Vec<T>>) -> Vec<Vec<T>>
                 column.push(cell.clone());
                 trans_vec.push(column);
             } else {
-                //TODO Danger Zone: Replace unwrap
-                trans_vec.get_mut(index).unwrap().push(cell.clone());
+                let val = match trans_vec.get_mut(index) {
+                    Some(v) => v,
+                    None => panic!("Nothing here"),
+                };
+                val.push(cell.clone());
             }
         }
         is_first_run = false;
