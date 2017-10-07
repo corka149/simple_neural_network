@@ -6,7 +6,7 @@ use std::io::prelude::*;
 
 fn main() {
 
-    let mut nn = NeuralNetwork::new(784,200,10,0.2, util::sigmoid);
+    let mut nn = NeuralNetwork::new(784,200,10,0.1, util::sigmoid);
 
     let mut awaited_output: Vec<f64>;
 
