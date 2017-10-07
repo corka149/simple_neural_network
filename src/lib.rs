@@ -39,19 +39,19 @@ impl<T> NeuralNetwork<T>
     }
 
     pub fn train(&mut self,
-                 inputs: &Vec<f64>,
-                 awaited_output: &Vec<f64>)
+                 inputs: &[f64],
+                 awaited_output: &[f64])
                  -> Result<(), matrix::MathError> {
-        let hidden_result = self.calculate_layer_output(&inputs, &self.wih);
+        let hidden_result = self.calculate_layer_output(inputs, &self.wih);
         let final_result = self.calculate_layer_output(&hidden_result, &self.who);
-        let output_error = math::subtract_vectors(&awaited_output, &final_result);
+        let output_error = math::subtract_vectors(awaited_output, &final_result);
 
         let who_adjustment =
             self.calculate_weighting_adjustment(&output_error, &final_result, &hidden_result)?;
         self.who = math::sum_matrices(&self.who, &who_adjustment)?;
 
         let hidden_error =
-            match math::multiply_matrices(&math::transpose_matrix(&self.who), &math::transpose_matrix(&vec![output_error])) {
+            match math::multiply_matrices(&math::transpose_matrix(&self.who), &math::transpose_matrix(&[output_error])) {
                 Ok(r) => r,
                 Err(e) => panic!("error: {}", e),
             };
@@ -64,19 +64,19 @@ impl<T> NeuralNetwork<T>
         };
 
         let wih_adjustment =
-            self.calculate_weighting_adjustment(&hidden_error, &hidden_result, inputs)?;
+            self.calculate_weighting_adjustment(hidden_error, &hidden_result, inputs)?;
         self.wih = math::sum_matrices(&self.wih, &wih_adjustment)?;
 
         Ok(())
     }
 
-    pub fn query(&self, inputs: &Vec<f64>) -> Vec<f64> {
-        let hidden_outputs = self.calculate_layer_output(&inputs, &self.wih);
+    pub fn query(&self, inputs: &[f64]) -> Vec<f64> {
+        let hidden_outputs = self.calculate_layer_output(inputs, &self.wih);
         self.calculate_layer_output(&hidden_outputs, &self.who)
     }
 
-    fn calculate_layer_output(&self, inputs: &Vec<f64>, weighting: &Vec<Vec<f64>>) -> Vec<f64> {
-        let inputs = math::transpose_matrix(&vec![inputs.clone()]);
+    fn calculate_layer_output(&self, inputs: &[f64], weighting: &[Vec<f64>]) -> Vec<f64> {
+        let inputs = math::transpose_matrix(&[inputs.to_owned()]);
         let weighted_input = match math::multiply_matrices(weighting, &inputs) {
             Ok(r) => r,
             Err(e) => panic!("{}", e),
@@ -91,20 +91,20 @@ impl<T> NeuralNetwork<T>
     }
 
     fn calculate_weighting_adjustment(&self,
-                                      error: &Vec<f64>,
-                                      output: &Vec<f64>,
-                                      previous_output: &Vec<f64>)
+                                      error: &[f64],
+                                      output: &[f64],
+                                      previous_output: &[f64])
                                       -> Result<Vec<Vec<f64>>, matrix::MathError> {
         let inner_result: Vec<f64> = error
             .iter()
             .zip(output)
             .map(|(x, y)| x * y * (1.0 - y))
             .collect();
-        let inner_result = math::transpose_matrix(&vec![inner_result]);
+        let inner_result = math::transpose_matrix(&[inner_result]);
         let mut outer_result = math::multiply_matrices(&inner_result,
-                                                       &vec![previous_output.clone()])?;
+                                                       &[previous_output.to_owned()])?;
 
-        for row in outer_result.iter_mut() {
+        for row in &mut outer_result {
             for cell in row.iter_mut() {
                 *cell *= self.learning_rate;
             }

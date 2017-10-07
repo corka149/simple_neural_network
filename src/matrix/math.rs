@@ -102,7 +102,7 @@ pub fn transpose_matrix<T>(target: &[Vec<T>]) -> Vec<Vec<T>>
 /// Example:    1       1   0   0
 ///             2   =>  0   2   0
 ///             3       0   0   3
-pub fn make_vector_quadratic(target_vec: &Vec<Vec<f64>>) -> Option<Vec<Vec<f64>>> {
+pub fn make_vector_quadratic(target_vec: &[Vec<f64>]) -> Option<Vec<Vec<f64>>> {
     let mut quadratic_vec: Vec<Vec<f64>> = vec![];
 
     for (index, value) in target_vec.iter().enumerate() {
