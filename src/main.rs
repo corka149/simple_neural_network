@@ -20,7 +20,9 @@ fn main() {
         if index % 600 == 0 {
             println!("{} %", index / 600);
         }
-        nn.train(&values, &awaited_output);
+        if let Err(e) = nn.train(&values, &awaited_output) {
+            panic!("{}", e);
+        };
     }
 
     // ----------------------------------------------------------

@@ -1,12 +1,11 @@
 use rand;
 use rand::Rng;
 use std::f64::consts::E;
-use std::f64::consts::PI;
 
 pub fn create_weighting_vec(x: u64, y: u64) -> Vec<Vec<f64>> {
     let mut weighting_vec = Vec::new();
 
-    for number in 0..y {
+    for _number in 0..y {
         weighting_vec.push(create_weighting_row(x));
     }
 
@@ -15,10 +14,8 @@ pub fn create_weighting_vec(x: u64, y: u64) -> Vec<Vec<f64>> {
 
 pub fn create_weighting_row(x: u64) -> Vec<f64> {
     let mut row: Vec<f64> = Vec::new();
-    let y = x as f64;
 
-
-    for number in 0..x {
+    for _number in 0..x {
         let min = rand::thread_rng().gen_range(-0.1, -0.01);
         let max = rand::thread_rng().gen_range(0.01, 0.1);
         row.push(rand::thread_rng().gen_range(min, max));

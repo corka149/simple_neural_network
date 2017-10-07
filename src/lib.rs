@@ -10,15 +10,11 @@ use matrix::math;
 pub struct NeuralNetwork<T>
     where T: Fn(f64) -> f64
 {
-    input_nodes: u64,
-    hidden_nodes: u64,
-    output_nodes: u64,
     learning_rate: f64,
-
     activation_function: T,
 
-    wih: Vec<Vec<f64>>,
-    who: Vec<Vec<f64>>,
+    wih: Vec<Vec<f64>>, // weighting: input -> hidden
+    who: Vec<Vec<f64>>, // weighting: hidden -> output
 }
 
 impl<T> NeuralNetwork<T>
@@ -34,11 +30,9 @@ impl<T> NeuralNetwork<T>
         let who = util::create_weighting_vec(hidden_nodes, output_nodes);
 
         NeuralNetwork {
-            input_nodes,
-            hidden_nodes,
-            output_nodes,
             learning_rate,
             activation_function,
+
             wih, // weighting: input -> hidden
             who, // weighting: hidden -> output
         }

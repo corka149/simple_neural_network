@@ -1,15 +1,15 @@
 use super::MathError;
 use super::*;
 
-pub fn multiply_matrices(first_vec: &Vec<Vec<f64>>,
-                         second_vec: &Vec<Vec<f64>>)
+pub fn multiply_matrices(first_vec: &[Vec<f64>],
+                         second_vec: &[Vec<f64>])
                          -> Result<Vec<Vec<f64>>, MathError> {
     let mut product: Vec<Vec<f64>> = Vec::new();
 
     for first_row in first_vec {
         let mut result_row: Vec<f64> = Vec::new();
 
-        for second_row in transpose_matrix(&second_vec) {
+        for second_row in transpose_matrix(second_vec) {
             if first_row.len() != second_row.len() {
                 eprintln!("left {} | right {}", first_row.len(), second_row.len());
                 eprintln!("right matrix: {:?}", second_vec);
@@ -29,7 +29,7 @@ pub fn multiply_matrices(first_vec: &Vec<Vec<f64>>,
     Ok(product)
 }
 
-pub fn subtract_vectors(first_vec: &Vec<f64>, second_vec: &Vec<f64>) -> Vec<f64> {
+pub fn subtract_vectors(first_vec: &[f64], second_vec: &[f64]) -> Vec<f64> {
     first_vec
         .iter()
         .zip(second_vec)
@@ -37,8 +37,8 @@ pub fn subtract_vectors(first_vec: &Vec<f64>, second_vec: &Vec<f64>) -> Vec<f64>
         .collect()
 }
 
-pub fn sum_matrices(first: &Vec<Vec<f64>>,
-                    second: &Vec<Vec<f64>>)
+pub fn sum_matrices(first: &[Vec<f64>],
+                    second: &[Vec<f64>])
                     -> Result<Vec<Vec<f64>>, MathError> {
     let mut x = 0;
     let mut result: Vec<Vec<f64>> = Vec::new();
@@ -61,7 +61,7 @@ pub fn sum_matrices(first: &Vec<Vec<f64>>,
             return Err(MathError);
         }
 
-        let mut row = row_first
+        let row = row_first
             .iter()
             .zip(row_second)
             .map(|(a, b)| a + b)
@@ -74,7 +74,7 @@ pub fn sum_matrices(first: &Vec<Vec<f64>>,
     Ok(result)
 }
 
-pub fn transpose_matrix<T>(target: &Vec<Vec<T>>) -> Vec<Vec<T>>
+pub fn transpose_matrix<T>(target: &[Vec<T>]) -> Vec<Vec<T>>
     where T: Clone
 {
     let mut trans_vec: Vec<Vec<T>> = Vec::new();
@@ -106,7 +106,7 @@ pub fn make_vector_quadratic(target_vec: &Vec<Vec<f64>>) -> Option<Vec<Vec<f64>>
     let mut quadratic_vec: Vec<Vec<f64>> = vec![];
 
     for (index, value) in target_vec.iter().enumerate() {
-        let mut row = create_zeroed_vector(target_vec.len());
+        let row = create_zeroed_vector(target_vec.len());
         quadratic_vec.push(row);
 
         let value = match value.get(0) {
@@ -114,7 +114,7 @@ pub fn make_vector_quadratic(target_vec: &Vec<Vec<f64>>) -> Option<Vec<Vec<f64>>
             None => panic!("Vector is empty - invalid state!"),
         };
 
-        let mut row = match quadratic_vec.get_mut(index) {
+        let row = match quadratic_vec.get_mut(index) {
             Some(r) => r,
             None => return None,
         };
