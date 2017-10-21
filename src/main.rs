@@ -5,7 +5,8 @@ use std::fs::File;
 use std::io::prelude::*;
 
 fn main() {
-
+    let mut wrong = 0;
+    let mut correct = 0;
     let mut nn = NeuralNetwork::new(784,200,10,0.1, util::sigmoid);
 
     let mut awaited_output: Vec<f64>;
@@ -21,7 +22,7 @@ fn main() {
             println!("{} %", index / 600);
         }
         if let Err(e) = nn.train(&values, &awaited_output) {
-            panic!("{}", e);
+            eprintln!("{}", e);
         };
     }
 
@@ -32,18 +33,20 @@ fn main() {
         let mut answer: usize = 0;
         let mut highest: f64 = 0.0;
 
-        print!("correct number: {} | neural network answer: (", number);
         for (index, value) in nn.query(&values).iter().enumerate() {
             if *value > highest {
                 highest = *value;
                 answer = index;
             }
-            print!(" {}\t ", (*value as f32));
         }
-        println!(") {}", answer);
+        if number == answer {
+            correct += 1;
+        }else{
+            wrong += 1;
+        }
     }
-
-    println!("Finish!");
+    println!("Correct answers {}", correct);
+    println!("Finish! Error rate {} %", wrong as f64 / (wrong as f64 + correct as f64));
 }
 
 fn unpack(file_name: &str) -> String {
