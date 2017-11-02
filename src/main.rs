@@ -46,7 +46,7 @@ fn main() {
         }
     }
     println!("Correct answers {}", correct);
-    println!("Finish! Error rate {} %", wrong as f64 / (wrong as f64 + correct as f64));
+    println!("Finish! Error rate {} %", f64::from(wrong) / (f64::from(wrong) + f64::from(correct)));
 }
 
 fn unpack(file_name: &str) -> String {
