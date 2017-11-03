@@ -1,26 +1,21 @@
 use rand;
 use rand::Rng;
 use std::f64::consts::E;
+use matrix::prelude::*;
 
-pub fn create_weighting_vec(x: u64, y: u64) -> Vec<Vec<f64>> {
-    let mut weighting_vec = Vec::new();
-
-    for _number in 0..y {
-        weighting_vec.push(create_weighting_row(x));
-    }
-
-    weighting_vec
-}
-
-pub fn create_weighting_row(x: u64) -> Vec<f64> {
-    let mut row: Vec<f64> = Vec::new();
+pub fn create_weighting_matrix(x: usize, y: usize) -> Compressed<f64> {
+    let mut weightings: Compressed<f64> = Compressed::zero((x, y));
 
     for _number in 0..x {
-        let min = rand::thread_rng().gen_range(-0.1, -0.01);
-        let max = rand::thread_rng().gen_range(0.01, 0.1);
-        row.push(rand::thread_rng().gen_range(min, max));
+        for _number in 0..y {
+            let min = rand::thread_rng().gen_range(-0.1, -0.01);
+            let max = rand::thread_rng().gen_range(0.01, 0.1);
+            let val = rand::thread_rng().gen_range(min, max);
+            weightings.set((x, y), val);
+        }
     }
-    row
+
+    weightings
 }
 
 pub fn sigmoid(x: f64) -> f64 {
@@ -32,20 +27,21 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_create_weighting_row() {
-        let row = create_weighting_row(1000);
-        assert_eq!(row.len(), 1000);
+    fn test_create_weighting_matrix() {
+        let matrix = create_weighting_matrix(3, 4);
+        let mut too_high = Vec::new();
 
-        let check_values: Vec<&f64> = row.iter().filter(|x| **x < -0.5 && **x > 0.5).collect();
+        for _x in 0..matrix.rows {
+            for _y in 0..matrix.columns {
+                let val = matrix.get((x, y));
+                if val < -0.5 && val > 0.5 {
+                    too_high.push(val);
+                }
+            }
+        }
 
-        assert_eq!(check_values.len() , 0);
-    }
-
-    #[test]
-    fn test_create_weighting_vec() {
-        let vec = create_weighting_vec(3, 4);
-        assert_eq!(vec.len(), 4);
-        assert_eq!(vec[0].len(), 3);
+        assert_eq!(matrix.rows, 4);
+        assert_eq!(matrix.columns, 3);
     }
 
     #[test]
