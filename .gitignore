@@ -7,3 +7,5 @@ train.csv
 test.csv
 
 target/debug/
+
+target/release/

@@ -1,8 +1,10 @@
 extern crate neural_network;
+extern crate chrono;
 
 use neural_network::*;
 use std::fs::File;
 use std::io::prelude::*;
+use chrono::prelude::*;
 
 fn main() {
     let mut wrong = 0;
@@ -10,6 +12,8 @@ fn main() {
     let mut nn = NeuralNetwork::new(784,200,10,0.1, util::sigmoid);
 
     let mut awaited_output: Vec<f64>;
+
+    println!("Start time: {}", Local::now());
 
     for (index, line) in unpack("train.csv").lines().enumerate() {
         let (number, values) = mnist_data::convert_mnist_line(line);
@@ -46,7 +50,8 @@ fn main() {
         }
     }
     println!("Correct answers {}", correct);
-    println!("Finish! Error rate {} %", f64::from(wrong) / (f64::from(wrong) + f64::from(correct)));
+    println!("Finish! Error rate {} %", f64::from(wrong) / (f64::from(wrong) + f64::from(correct)) * 100.0);
+    println!("End time: {}", Local::now());
 }
 
 fn unpack(file_name: &str) -> String {

@@ -6,3 +6,4 @@ authors = ["corka149 <corka149@mailbox.org>"]
 [dependencies]
 
 rand = "0.3.14"
+chrono = "0.4.0"
