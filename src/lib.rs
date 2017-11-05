@@ -6,6 +6,7 @@ pub mod mnist_data;
 
 
 use matrix::math;
+use matrix::error::*;
 
 pub struct NeuralNetwork<T>
     where T: Fn(f64) -> f64
@@ -41,7 +42,7 @@ impl<T> NeuralNetwork<T>
     pub fn train(&mut self,
                  inputs: &[f64],
                  awaited_output: &[f64])
-                 -> Result<(), matrix::MathError> {
+                 -> Result<(), MathError> {
         let hidden_result = self.calculate_layer_output(inputs, &self.wih);
         let final_result = self.calculate_layer_output(&hidden_result, &self.who);
         let output_error = math::subtract_vectors(awaited_output, &final_result);
@@ -94,7 +95,7 @@ impl<T> NeuralNetwork<T>
                                       error: &[f64],
                                       output: &[f64],
                                       previous_output: &[f64])
-                                      -> Result<Vec<Vec<f64>>, matrix::MathError> {
+                                      -> Result<Vec<Vec<f64>>, MathError> {
         let inner_result: Vec<f64> = error
             .iter()
             .zip(output)

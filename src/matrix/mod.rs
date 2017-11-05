@@ -1,24 +1,46 @@
-use std::error;
-use std::fmt;
-
 pub mod math;
+pub mod error;
 
-#[derive(Debug,Clone)]
-pub struct MathError;
-
-impl fmt::Display for MathError {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "incompatible vectors: Sizes does not match")
-    }
+pub struct Matrix {
+    rows: usize,
+    columns: usize,
+    data_container: Vec<Vec<f64>>,
 }
 
-impl error::Error for MathError {
-    fn description(&self) -> &str {
-        "incompatible vectors: Sizes does not match"
+impl Matrix {
+
+    fn zero(rows: usize, columns: usize) -> Matrix {
+        let mut data_container: Vec<Vec<f64>> = Vec::new();
+
+        for _times in 0..data_container {
+            data_container.push(create_zeroed_vector(columns));
+        }
+
+        Matrix{
+            rows,
+            columns,
+            data_container,
+        }
     }
 
-    fn cause(&self) -> Option<&error::Error> {
-        None
+    fn multiply(&self, right: &Matrix) -> Result<Matrix,error::MathError> {
+        let result = math::multiply_matrices(self.data_container, right.data_container)?;
+
+        Matrix {
+            rows: right.rows,
+            columns: right.columns,
+            data_container: result,
+        }
+    }
+
+    fn add(&self, right: &Matrix) -> Result<Matrix,error::MathError> {
+        let result = math::sum_matrices(&self.data_container, &right.data_container)?;
+
+        Matrix {
+            rows: right.rows,
+            columns: right.columns,
+            data_container: result,
+        }
     }
 }
 
