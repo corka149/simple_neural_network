@@ -1,4 +1,4 @@
-wtarget/
+target/
 **/*.rs.bk
 .idea
 mnist_train.csv
