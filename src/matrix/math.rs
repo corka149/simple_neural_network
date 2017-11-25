@@ -1,5 +1,4 @@
 use super::error::MathError;
-use super::*;
 
 pub fn multiply_matrices(left: &[Vec<f64>],
                          right: &[Vec<f64>])

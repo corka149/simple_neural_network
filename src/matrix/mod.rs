@@ -24,14 +24,53 @@ impl Matrix {
         }
     }
 
-    pub fn create_weighting_matrix(x: u64, y: u64) -> Matrix {
-        let mut weighting_vec = Vec::new();
+    pub fn create_weighting_matrix(rows: usize, columns: usize) -> Matrix {
+        let mut weighting_vec: Vec<Vec<f64>> = Vec::new();
 
-        for _number in 0..y {
-            weighting_vec.push(create_weighting_row(x));
+        for _number in 0..rows {
+            weighting_vec.push(create_weighting_row(columns));
         }
 
-        weighting_vec
+        Matrix{
+            rows,
+            columns,
+            data_container: weighting_vec,
+        }
+    }
+
+    pub fn from_1d_vec(source : &[f64], is_vertical: bool) -> Matrix{
+        let (mut rows, mut columns) = (1,1);
+        let data_container = if is_vertical {
+            rows = source.len();
+            math::transpose_matrix(&[source.to_owned()])
+        } else {
+            columns = source.len();
+            vec![source.to_owned()]
+        };
+
+        Matrix{
+            rows,
+            columns,
+            data_container
+        }
+    }
+
+    pub fn from_2d_vec(source: &[Vec<f64>]) -> Matrix {
+        let row_size = match source.get(0) {
+            Some(val) => val.len(),
+            None => panic!("Cannot create a matrix from 2d vec without at least one row."),
+        };
+        for row in source {
+            if row_size != row.len() {
+                panic!("Not all rows have the same amount of columns: \
+                first row -> {} columns, current row -> {} columns", row_size, row.len());
+            }
+        }
+        Matrix {
+            rows: source.len(),
+            columns: row_size,
+            data_container: source.to_vec(),
+        }
     }
 
     pub fn multiply(&self, right: &Matrix) -> Result<Matrix,error::MathError> {
@@ -52,6 +91,10 @@ impl Matrix {
             columns: right.columns,
             data_container: result,
         })
+    }
+
+    pub fn data_container(&self) -> &Vec<Vec<f64>>{
+        &self.data_container
     }
 }
 

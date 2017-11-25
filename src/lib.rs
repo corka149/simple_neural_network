@@ -15,16 +15,16 @@ pub struct NeuralNetwork<T>
     learning_rate: f64,
     activation_function: T,
 
-    wih: Vec<Vec<f64>>, // weighting: input -> hidden
-    who: Vec<Vec<f64>>, // weighting: hidden -> output
+    wih: Matrix, // weighting: input -> hidden
+    who: Matrix, // weighting: hidden -> output
 }
 
 impl<T> NeuralNetwork<T>
     where T: Fn(f64) -> f64
 {
-    pub fn new(input_nodes: u64,
-               hidden_nodes: u64,
-               output_nodes: u64,
+    pub fn new(input_nodes: usize,
+               hidden_nodes: usize,
+               output_nodes: usize,
                learning_rate: f64,
                activation_function: T)
                -> NeuralNetwork<T> {
@@ -44,22 +44,22 @@ impl<T> NeuralNetwork<T>
                  inputs: &[f64],
                  awaited_output: &[f64])
                  -> Result<(), MathError> {
-        let hidden_result = self.calculate_layer_output(inputs, &self.wih);
-        let final_result = self.calculate_layer_output(&hidden_result, &self.who);
+        let hidden_result = self.calculate_layer_output(inputs, self.wih.data_container());
+        let final_result = self.calculate_layer_output(&hidden_result, self.who.data_container());
         let output_error = math::subtract_vectors(awaited_output, &final_result);
 
         let who_adjustment =
             self.calculate_weighting_adjustment(&output_error, &final_result, &hidden_result)?;
-        self.who = math::sum_matrices(&self.who, &who_adjustment)?;
+        self.who = self.who.add( &Matrix::from_2d_vec(&who_adjustment))?;
 
         let hidden_error =
-            match math::multiply_matrices(&math::transpose_matrix(&self.who), &math::transpose_matrix(&[output_error])) {
+            match self.who.multiply(&Matrix::from_1d_vec(&output_error, true)) {
                 Ok(r) => r,
                 Err(e) => panic!("error: {}", e),
             };
 
-        // change from two dimensional to one dimensional matrix
-        let hidden_error = math::transpose_matrix(&hidden_error);
+        // change from two dimensional to one dimensional matrix - Need first row
+        let hidden_error = math::transpose_matrix(hidden_error.data_container());
         let hidden_error = match hidden_error.first() {
             Some(he) => he,
             None => panic!("hidden error can never be without a first row!!!"),
@@ -67,14 +67,14 @@ impl<T> NeuralNetwork<T>
 
         let wih_adjustment =
             self.calculate_weighting_adjustment(hidden_error, &hidden_result, inputs)?;
-        self.wih = math::sum_matrices(&self.wih, &wih_adjustment)?;
+        self.wih = self.wih.add(&Matrix::from_2d_vec(&wih_adjustment))?;
 
         Ok(())
     }
 
     pub fn query(&self, inputs: &[f64]) -> Vec<f64> {
-        let hidden_outputs = self.calculate_layer_output(inputs, &self.wih);
-        self.calculate_layer_output(&hidden_outputs, &self.who)
+        let hidden_outputs = self.calculate_layer_output(inputs, self.wih.data_container());
+        self.calculate_layer_output(&hidden_outputs, self.who.data_container())
     }
 
     fn calculate_layer_output(&self, inputs: &[f64], weighting: &[Vec<f64>]) -> Vec<f64> {

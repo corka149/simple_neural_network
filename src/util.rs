@@ -2,7 +2,7 @@ use rand;
 use rand::Rng;
 use std::f64::consts::E;
 
-pub fn create_weighting_row(x: u64) -> Vec<f64> {
+pub fn create_weighting_row(x: usize) -> Vec<f64> {
     let mut row: Vec<f64> = Vec::new();
 
     for _number in 0..x {
