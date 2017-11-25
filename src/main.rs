@@ -17,7 +17,7 @@ fn main() {
 
     for (index, line) in unpack("train.csv").lines().enumerate() {
         let (number, values) = mnist_data::convert_mnist_line(line);
-        awaited_output = matrix::create_zeroed_vector(10);
+        awaited_output = matrix::math::create_zeroed_vector(10);
         match awaited_output.get_mut(number) {
             Some(v) => *v = 0.99,
             None => panic!("number {} could not occur!", number),

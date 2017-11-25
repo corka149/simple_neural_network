@@ -5,6 +5,7 @@ pub mod matrix;
 pub mod mnist_data;
 
 
+use matrix::Matrix;
 use matrix::math;
 use matrix::error::*;
 
@@ -27,8 +28,8 @@ impl<T> NeuralNetwork<T>
                learning_rate: f64,
                activation_function: T)
                -> NeuralNetwork<T> {
-        let wih = util::create_weighting_vec(input_nodes, hidden_nodes);
-        let who = util::create_weighting_vec(hidden_nodes, output_nodes);
+        let wih = Matrix::create_weighting_matrix(input_nodes, hidden_nodes);
+        let who = Matrix::create_weighting_matrix(hidden_nodes, output_nodes);
 
         NeuralNetwork {
             learning_rate,
@@ -116,7 +117,7 @@ impl<T> NeuralNetwork<T>
 }
 
 #[cfg(test)]
-mod tests {
+mod neural_network_tests {
     use super::*;
 
     #[test]
@@ -130,6 +131,7 @@ mod tests {
         assert_eq!((nn.activation_function)(1.0), 2.0);
     }
 
+    // Running train() should never panic
     #[test]
     fn test_train() {
         let mut nn = NeuralNetwork::new(3, 3, 3, 0.3, |x| x + 1.0);
@@ -140,6 +142,7 @@ mod tests {
         nn.train(&inputs, &outputs);
     }
 
+    // Running query() should never panic
     #[test]
     fn test_query() {
         let nn = NeuralNetwork::new(3, 3, 3, 0.3, |x| x + 1.0);

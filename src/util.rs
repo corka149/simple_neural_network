@@ -2,16 +2,6 @@ use rand;
 use rand::Rng;
 use std::f64::consts::E;
 
-pub fn create_weighting_vec(x: u64, y: u64) -> Vec<Vec<f64>> {
-    let mut weighting_vec = Vec::new();
-
-    for _number in 0..y {
-        weighting_vec.push(create_weighting_row(x));
-    }
-
-    weighting_vec
-}
-
 pub fn create_weighting_row(x: u64) -> Vec<f64> {
     let mut row: Vec<f64> = Vec::new();
 
@@ -28,7 +18,7 @@ pub fn sigmoid(x: f64) -> f64 {
 }
 
 #[cfg(test)]
-mod tests {
+mod util_tests {
     use super::*;
 
     #[test]
@@ -39,13 +29,6 @@ mod tests {
         let check_values: Vec<&f64> = row.iter().filter(|x| **x < -0.5 && **x > 0.5).collect();
 
         assert_eq!(check_values.len() , 0);
-    }
-
-    #[test]
-    fn test_create_weighting_vec() {
-        let vec = create_weighting_vec(3, 4);
-        assert_eq!(vec.len(), 4);
-        assert_eq!(vec[0].len(), 3);
     }
 
     #[test]

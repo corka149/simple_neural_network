@@ -127,8 +127,21 @@ pub fn from_vector_to_matrix(target_vec: &[Vec<f64>]) -> Option<Vec<Vec<f64>>> {
     Some(quadratic_vec)
 }
 
+pub fn create_zeroed_vector(columns: usize) -> Vec<f64> {
+    let mut index = 0;
+    let mut zeroed_vec: Vec<f64> = Vec::new();
+
+    while index < columns {
+        zeroed_vec.push(0.0);
+
+        index += 1;
+    }
+
+    zeroed_vec
+}
+
 #[cfg(test)]
-mod tests {
+mod math_tests {
     use super::*;
 
     #[test]
@@ -204,5 +217,15 @@ mod tests {
         assert_eq!(result[0][1], 8.0);
         assert_eq!(result[1][0], 10.0);
         assert_eq!(result[1][1], 12.0);
+    }
+
+    use super::*;
+
+    #[test]
+    fn test_create_zeroed_vector() {
+        let z_vec = create_zeroed_vector(3);
+        assert_eq!(z_vec[0], 0.0);
+        assert_eq!(z_vec[1], 0.0);
+        assert_eq!(z_vec[2], 0.0);
     }
 }
