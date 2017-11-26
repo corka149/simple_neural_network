@@ -10,7 +10,7 @@ pub struct Matrix {
 
 impl Matrix {
 
-    pub fn zero(rows: usize, columns: usize) -> Matrix {
+    pub fn zero(columns: usize, rows: usize) -> Matrix {
         let mut data_container: Vec<Vec<f64>> = Vec::new();
 
         for _row_count in 0..rows {
@@ -24,7 +24,7 @@ impl Matrix {
         }
     }
 
-    pub fn create_weighting_matrix(rows: usize, columns: usize) -> Matrix {
+    pub fn create_weighting_matrix(columns: usize, rows: usize) -> Matrix {
         let mut weighting_vec: Vec<Vec<f64>> = Vec::new();
 
         for _number in 0..rows {
@@ -74,13 +74,22 @@ impl Matrix {
     }
 
     pub fn multiply(&self, right: &Matrix) -> Result<Matrix,error::MathError> {
-        let result = math::multiply_matrices(&self.data_container, &right.data_container)?;
+        let result = match math::multiply_matrices(&self.data_container, &right.data_container){
+            Ok(val) => {
+                Ok(Matrix {
+                    rows: self.rows,
+                    columns: right.columns,
+                    data_container: val,
+                })
+            },
+            Err(e) => {
+                eprintln!("Left: {} rows {} cols | Right: {} rows {} cols"
+                          , self.rows, self.columns, right.rows, right.columns);
+                Err(e)
+            }
+        };
 
-        Ok(Matrix {
-            rows: self.rows,
-            columns: right.columns,
-            data_container: result,
-        })
+        result
     }
 
     pub fn add(&self, right: &Matrix) -> Result<Matrix,error::MathError> {
@@ -93,12 +102,18 @@ impl Matrix {
         })
     }
 
+    pub fn transpose(&self) -> Matrix {
+        Matrix{
+            rows: self.columns,
+            columns: self.rows,
+            data_container: math::transpose_matrix(&self.data_container),
+        }
+    }
+
     pub fn data_container(&self) -> &Vec<Vec<f64>>{
         &self.data_container
     }
 }
-
-
 
 #[cfg(test)]
 mod matrix_tests {

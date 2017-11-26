@@ -53,7 +53,7 @@ impl<T> NeuralNetwork<T>
         self.who = self.who.add( &Matrix::from_2d_vec(&who_adjustment))?;
 
         let hidden_error =
-            match self.who.multiply(&Matrix::from_1d_vec(&output_error, true)) {
+            match self.who.transpose().multiply(&Matrix::from_1d_vec(&output_error, true)) {
                 Ok(r) => r,
                 Err(e) => panic!("error: {}", e),
             };
