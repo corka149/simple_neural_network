@@ -1,12 +1,12 @@
-
+/// Converts one data set.
 pub fn convert_mnist_line(line: &str) -> (usize, Vec<f64>) {
     // Is a iterator
     let elements = line.split(',');
     let values: Vec<f64> = elements
         .map(|x: &str| match x.trim().parse() {
-                 Ok(v) => v ,
-                 Err(e) => panic!("{:?}", e),
-             })
+            Ok(v) => v,
+            Err(e) => panic!("{:?}", e),
+        })
         .collect();
 
     let specific_number = match values.first() {
@@ -14,17 +14,21 @@ pub fn convert_mnist_line(line: &str) -> (usize, Vec<f64>) {
         None => panic!("First value in mnist_line is not a number"),
     };
 
-    let values: Vec<f64> = values.iter().skip(1).map(|x | x / 255.0 * 0.99 + 0.01).collect();
+    let values: Vec<f64> = values
+        .iter()
+        .skip(1)
+        .map(|x| x / 255.0 * 0.99 + 0.01)
+        .collect();
 
     (specific_number, values)
 }
 
 #[cfg(test)]
-mod tests{
+mod tests {
     use super::*;
 
     #[test]
-    fn test_convert_mnist_line(){
+    fn test_convert_mnist_line() {
         let test_line = "1,255,16,100";
         let (number, values) = convert_mnist_line(test_line);
 

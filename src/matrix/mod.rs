@@ -2,6 +2,7 @@ pub mod math;
 pub mod error;
 use super::util::*;
 
+/// This struct represents a basic matrix for mathematic operations.
 pub struct Matrix {
     rows: usize,
     columns: usize,
@@ -9,7 +10,6 @@ pub struct Matrix {
 }
 
 impl Matrix {
-
     pub fn zero(columns: usize, rows: usize) -> Matrix {
         let mut data_container: Vec<Vec<f64>> = Vec::new();
 
@@ -17,7 +17,7 @@ impl Matrix {
             data_container.push(math::create_zeroed_vector(columns));
         }
 
-        Matrix{
+        Matrix {
             rows,
             columns,
             data_container,
@@ -31,30 +31,41 @@ impl Matrix {
             weighting_vec.push(create_weighting_row(columns));
         }
 
-        Matrix{
+        Matrix {
             rows,
             columns,
             data_container: weighting_vec,
         }
     }
 
-    pub fn from_1d_vec(source : &[f64], is_vertical: bool) -> Matrix{
-        let (mut rows, mut columns) = (1,1);
+    /// Creates a matrix from a 1D vector.
+    ///
+    /// # Example for source:
+    ///
+    /// source that is vertical :           | 1 |
+    ///                                     | 2 |
+    ///                                     | 1 |
+    ///
+    /// source that is NOT vertical :       | 1   2   1 |
+    ///
+    pub fn from_1d_vec(source: &[f64], is_vertical: bool) -> Matrix {
+        let (mut rows, mut columns) = (1, 1);
         let data_container = if is_vertical {
             rows = source.len();
-            math::transpose_matrix(&[source.to_owned()])
+            math::transpose_2d_vector(&[source.to_owned()])
         } else {
             columns = source.len();
             vec![source.to_owned()]
         };
 
-        Matrix{
+        Matrix {
             rows,
             columns,
-            data_container
+            data_container,
         }
     }
 
+    /// Creates a matrix from a
     pub fn from_2d_vec(source: &[Vec<f64>]) -> Matrix {
         let row_size = match source.get(0) {
             Some(val) => val.len(),
@@ -62,8 +73,12 @@ impl Matrix {
         };
         for row in source {
             if row_size != row.len() {
-                panic!("Not all rows have the same amount of columns: \
-                first row -> {} columns, current row -> {} columns", row_size, row.len());
+                panic!(
+                    "Not all rows have the same amount of columns: \
+                first row -> {} columns, current row -> {} columns",
+                    row_size,
+                    row.len()
+                );
             }
         }
         Matrix {
@@ -73,26 +88,31 @@ impl Matrix {
         }
     }
 
-    pub fn multiply(&self, right: &Matrix) -> Result<Matrix,error::MathError> {
-        let result = match math::multiply_matrices(&self.data_container, &right.data_container){
+    /// Multiply a matrix with another one.
+    pub fn multiply(&self, right: &Matrix) -> Result<Matrix, error::MathError> {
+        match math::multiply_matrices(&self.data_container, &right.data_container) {
             Ok(val) => {
                 Ok(Matrix {
                     rows: self.rows,
                     columns: right.columns,
                     data_container: val,
                 })
-            },
+            }
             Err(e) => {
-                eprintln!("Left: {} rows {} cols | Right: {} rows {} cols"
-                          , self.rows, self.columns, right.rows, right.columns);
+                eprintln!(
+                    "Left: {} rows {} cols | Right: {} rows {} cols",
+                    self.rows,
+                    self.columns,
+                    right.rows,
+                    right.columns
+                );
                 Err(e)
             }
-        };
-
-        result
+        }
     }
 
-    pub fn add(&self, right: &Matrix) -> Result<Matrix,error::MathError> {
+    /// Adds one matrix to another.
+    pub fn add(&self, right: &Matrix) -> Result<Matrix, error::MathError> {
         let result = math::sum_matrices(&self.data_container, &right.data_container)?;
 
         Ok(Matrix {
@@ -102,15 +122,16 @@ impl Matrix {
         })
     }
 
+    /// Transpose a matrix.
     pub fn transpose(&self) -> Matrix {
-        Matrix{
+        Matrix {
             rows: self.columns,
             columns: self.rows,
-            data_container: math::transpose_matrix(&self.data_container),
+            data_container: math::transpose_2d_vector(&self.data_container),
         }
     }
 
-    pub fn data_container(&self) -> &Vec<Vec<f64>>{
+    pub fn data_container(&self) -> &Vec<Vec<f64>> {
         &self.data_container
     }
 }
@@ -120,7 +141,7 @@ mod matrix_tests {
     use super::*;
 
     #[test]
-    fn test_zero(){
+    fn test_zero() {
         let m = Matrix::zero(2, 2);
         assert_eq!(m.rows, 2);
         assert_eq!(m.columns, 2);
@@ -136,8 +157,8 @@ mod matrix_tests {
     }
 
     #[test]
-    fn test_multiply(){
-        let mut m1 = Matrix::zero(2,3);
+    fn test_multiply() {
+        let mut m1 = Matrix::zero(2, 3);
         m1.data_container[0][0] = 2.0;
         m1.data_container[0][1] = 3.0;
         m1.data_container[0][2] = 1.0;
@@ -164,8 +185,8 @@ mod matrix_tests {
     }
 
     #[test]
-    fn test_multiply_err(){
-        let mut m1 = Matrix::zero(2,3);
+    fn test_multiply_err() {
+        let mut m1 = Matrix::zero(2, 3);
         m1.data_container[0][0] = 2.0;
         m1.data_container[0][1] = 3.0;
         m1.data_container[0][2] = 1.0;
@@ -185,8 +206,8 @@ mod matrix_tests {
     }
 
     #[test]
-    fn test_add(){
-        let mut m1 = Matrix::zero(2,2);
+    fn test_add() {
+        let mut m1 = Matrix::zero(2, 2);
         m1.data_container[0][0] = 2.0;
         m1.data_container[0][1] = 3.0;
         m1.data_container[1][0] = 2.0;
@@ -210,8 +231,8 @@ mod matrix_tests {
     }
 
     #[test]
-    fn test_add_err(){
-        let mut m1 = Matrix::zero(2,2);
+    fn test_add_err() {
+        let mut m1 = Matrix::zero(2, 2);
         m1.data_container[0][0] = 2.0;
         m1.data_container[0][1] = 3.0;
         m1.data_container[1][0] = 2.0;

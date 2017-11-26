@@ -28,7 +28,7 @@ mod util_tests {
 
         let check_values: Vec<&f64> = row.iter().filter(|x| **x < -0.5 && **x > 0.5).collect();
 
-        assert_eq!(check_values.len() , 0);
+        assert_eq!(check_values.len(), 0);
     }
 
     #[test]

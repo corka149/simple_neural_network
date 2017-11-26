@@ -1,25 +1,22 @@
 use super::error::MathError;
 
-pub fn multiply_matrices(left: &[Vec<f64>],
-                         right: &[Vec<f64>])
-                         -> Result<Vec<Vec<f64>>, MathError> {
+pub fn multiply_matrices(
+    left: &[Vec<f64>],
+    right: &[Vec<f64>],
+) -> Result<Vec<Vec<f64>>, MathError> {
     let mut product: Vec<Vec<f64>> = Vec::new();
 
     for first_row in left {
         let mut result_row: Vec<f64> = Vec::new();
 
-        for second_row in transpose_matrix(right) {
+        for second_row in transpose_2d_vector(right) {
             if first_row.len() != second_row.len() {
                 eprintln!("left {} | right {}", first_row.len(), second_row.len());
                 eprintln!("right matrix: {:?}", right);
                 return Err(MathError);
             }
 
-            let cell = first_row
-                .iter()
-                .zip(second_row)
-                .map(|(a, b)| a * b)
-                .sum();
+            let cell = first_row.iter().zip(second_row).map(|(a, b)| a * b).sum();
             result_row.push(cell);
         }
         product.push(result_row);
@@ -29,16 +26,10 @@ pub fn multiply_matrices(left: &[Vec<f64>],
 }
 
 pub fn subtract_vectors(left: &[f64], right: &[f64]) -> Vec<f64> {
-    left
-        .iter()
-        .zip(right)
-        .map(|(a, b)| a - b)
-        .collect()
+    left.iter().zip(right).map(|(a, b)| a - b).collect()
 }
 
-pub fn sum_matrices(left: &[Vec<f64>],
-                    right: &[Vec<f64>])
-                    -> Result<Vec<Vec<f64>>, MathError> {
+pub fn sum_matrices(left: &[Vec<f64>], right: &[Vec<f64>]) -> Result<Vec<Vec<f64>>, MathError> {
     let mut x = 0;
     let mut result: Vec<Vec<f64>> = Vec::new();
 
@@ -73,8 +64,9 @@ pub fn sum_matrices(left: &[Vec<f64>],
     Ok(result)
 }
 
-pub fn transpose_matrix<T>(target: &[Vec<T>]) -> Vec<Vec<T>>
-    where T: Clone
+pub fn transpose_2d_vector<T>(target: &[Vec<T>]) -> Vec<Vec<T>>
+where
+    T: Clone,
 {
     let mut trans_vec: Vec<Vec<T>> = Vec::new();
     let mut is_first_run = true;

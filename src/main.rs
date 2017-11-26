@@ -9,7 +9,7 @@ use chrono::prelude::*;
 fn main() {
     let mut wrong = 0;
     let mut correct = 0;
-    let mut nn = NeuralNetwork::new(784,200,10,0.1, util::sigmoid);
+    let mut nn = NeuralNetwork::new(784, 200, 10, 0.1, util::sigmoid);
 
     let mut awaited_output: Vec<f64>;
 
@@ -45,12 +45,15 @@ fn main() {
         }
         if number == answer {
             correct += 1;
-        }else{
+        } else {
             wrong += 1;
         }
     }
     println!("Correct answers {}", correct);
-    println!("Finish! Error rate {} %", f64::from(wrong) / (f64::from(wrong) + f64::from(correct)) * 100.0);
+    println!(
+        "Finish! Error rate {} %",
+        f64::from(wrong) / (f64::from(wrong) + f64::from(correct)) * 100.0
+    );
     println!("End time: {}", Local::now());
 }
 
@@ -61,7 +64,7 @@ fn unpack(file_name: &str) -> String {
     };
 
     let mut content = String::new();
-    if let Err(e) = file.read_to_string(&mut content){
+    if let Err(e) = file.read_to_string(&mut content) {
         panic!("{}", e);
     }
     content
